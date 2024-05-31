@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="robots" content="noindex">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+		integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<style>
+    body {
+        background-color: black;
+        color: gainsboro;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    input[type="text"] {
+		padding: 10px;
+		font-size: 16px;
+		border-radius:0.5em;
+    }
+
+    button {
+        padding: 10px 20px;
+		border-radius:0.5em;
+		margin-top:1em;
+        font-size: 16px;
+        background-color: #555;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+	button:hover {animation: clickEffect 0.5s ease;animation-fill-mode: forwards;}
+    @keyframes clickEffect {
+        100% {
+            background-color: #333;
+        }
+    }
+	button:focus {animation: clickEffect2 0.5s ease;}
+	@keyframes clickEffect2 {
+	    0% {
+            background-color: #555;
+        }
+        50% {
+            background-color: green;
+        }
+        100% {
+            background-color: #555;
+        }
+	}
+	#again, #outcome2 {
+		display:none;
+		margin-bottom:1em;
+	}
+</style>
+<body>
+	<textarea id="inputText" rows="4" cols="50" placeholder="Type here…"></textarea>
+    <br>
+    <button id="submit">Submit</button>
+	<button id="again">Clear/Reload</button>
+	<div id="outcome"></div>
+	<div id="outcome2">
+		
+	</div>
+</body>
+<script>
+let linesArray = []; 
+document.getElementById("inputText").value = "";
+
+$("#again").click(function(){
+	window.location.reload()
+})
+
+$("#submit").click(function(){
+	linesArray = document.getElementById("inputText").value.split("\n");
+	$("#submit").blur();
+	if (linesArray.length==1 && linesArray[0]=="") {
+		alert("You didn't type anything…");
+		return;
+	}
+	if (linesArray.length > 10) {
+		alert("Enter up to 10 lines…");
+		return;
+	}
+	
+	for (let i=0;i<linesArray.length;i++) {
+		let contentArray = linesArray[i].trim().replace(/[^\w\s]/g, '').toLowerCase().split(' ').filter(Boolean);
+		if (contentArray.length<11) {
+			processLine(contentArray, i, false);
+		}
+		else {
+			processLine(contentArray, i, true);
+			//alert("You have entered a line with more than 10 syllables. By definition, it can't be an iambic pentameter…");
+		}	
+	}
+	
+	$("#submit").fadeOut(200, function(){
+		$("#again").fadeIn(500);
+		$("#outcome2").fadeIn(500);
+	});
+
+});
+
+function processLine(arr, lineNo = 0, isOver10Syl = false) {
+	let processEnded = false;
+	if (linesArray.length == lineNo+1) {
+		processEnded = true;
+	}
+	let syllablesSum;
+	if (isOver10Syl) {
+		arr = [];
+	}
+	const promises = arr.map(word => getSyllables(word));
+	Promise.all(promises)
+		.then(results => {
+			syllablesSum = results.map(obj => obj[0].numSyllables);
+			
+			const pronPatterns = arr.map(word => getEmph(word));
+			return Promise.all(pronPatterns);
+		})
+		.then(res => {
+			let emphPatterns = res.map(obj => obj[0].tags[0]);
+               let lineData = { syllablesSum, emphPatterns }; 
+			processResults(lineData, lineNo, processEnded);
+		})
+		.catch(error => {
+			console.error("Error:", error);
+		});
+}
+
+function getSyllables(word) {
+    return new Promise(function(resolve, reject) {
+        $.get('https://api.datamuse.com/words?sp=' + word + '&max=1&md=s')
+            .done(data => resolve(data))
+            .fail(error => reject(error));
+    });
+}
+
+function getEmph(word) {
+    return new Promise(function(resolve, reject) {
+        $.get('https://api.datamuse.com/words?sp=' + word + '&max=1&md=r')
+            .done(data => resolve(data))
+            .fail(error => reject(error));
+    });
+}
+
+function processResults(lineData, lineNo, processEnded) {
+    let syllablesSum = lineData.syllablesSum;
+    let emphPatterns = lineData.emphPatterns;
+	let theLineNumber = parseInt(lineNo)+1;
+	let theOutcome, outcomeStr;
+	//calculate syllable number;
+	let cnt = 0;
+	syllablesSum.forEach(function(el){
+		cnt = cnt+el;
+	});
+	if (cnt == 0) {
+		cnt = ">10";
+	}
+
+    // calculate emphasis pattern
+    let tmpArr = [];
+    emphPatterns.forEach(function (el, index) {
+        if (syllablesSum[index] === 1) {
+            tmpArr.push("X");
+			emphPatterns[index] = "X";
+        } else {
+            tmpArr.push(getEmphasisFromPattern(el));
+        }
+    });
+    tmpArr = tmpArr.flat();
+	
+	if (checkIamb(tmpArr) && cnt===10) {
+		theOutcome = true;
+		outcomeStr = "<span style='color:lightgreen'>This is an iambic pentameter.</span>";
+	}
+	else {
+		theOutcome = false;
+		outcomeStr = "<span style='color:crimson'>This is not an iambic pentameter.</span>";
+	}
+	
+	//displaying results
+	let encDiv = document.createElement("div");
+	encDiv.id = "theDiv"+theLineNumber;
+	let str0 = "Line #"+theLineNumber;
+	let str1 = "<p>Number of syllables: <span style='font-size:1.1em'>" + cnt + "</span></p>";
+	let str2 = "<p>Emphasis pattern: <span style='font-size:1.1em'>" + tmpArr.join(" ") + "</span></p>";
+	let str3 = "<p>Assessment: " + outcomeStr + "</p><br>";
+	$(encDiv).html(str0+str1+str2+str3);
+	document.getElementById("outcome").appendChild(encDiv);
+
+	if (processEnded) { // arrange line results 
+		const outcomeDiv = document.getElementById("outcome");
+		const children = Array.from(outcomeDiv.children);
+
+		children.sort((a, b) => {
+		  const numA = parseInt(a.id.replace("theDiv", ""), 10);
+		  const numB = parseInt(b.id.replace("theDiv", ""), 10);
+		  return numA - numB;
+		});
+
+		outcomeDiv.innerHTML = ""; // Clear existing content
+		children.forEach(child => outcomeDiv.appendChild(child));
+	}
+
+}
+
+function checkIamb(tmpArr) {
+    const expectedPattern = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+    for (let i = 0; i < tmpArr.length; i++) {
+        // If tmpArr[i] is "X," skip the comparison
+        if (tmpArr[i] !== "X") {
+            if (tmpArr[i] !== expectedPattern[i]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+function getEmphasisFromPattern(pattern) {
+    const numericParts = pattern.match(/\d+/g);
+    const emphasisArray = numericParts ? numericParts.map(part => parseInt(part)) : [];
+    return emphasisArray;
+}
+
+</script>
+</html>
