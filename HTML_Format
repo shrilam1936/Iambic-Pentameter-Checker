@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="robots" content="noindex">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+		integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<style>
+    body {
+        background-color: black;
+        color: gainsboro;
+        font-family: Calibri, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    input[type="text"] {
+		padding: 10px;
+		font-size: 16px;
+		border-radius:0.5em;
+    }
+
+    button {
+        padding: 10px 20px;
+		border-radius:0.5em;
+		margin-top:1em;
+        font-size: 16px;
+        background-color: #555;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+	button:hover {animation: clickEffect 0.5s ease;animation-fill-mode: forwards;}
+    @keyframes clickEffect {
+        100% {
+            background-color: #333;
+        }
+    }
+	button:focus {animation: clickEffect2 0.5s ease;}
+	@keyframes clickEffect2 {
+	    0% {
+            background-color: #555;
+        }
+        50% {
+            background-color: green;
+        }
+        100% {
+            background-color: #555;
+        }
+	}
+	#again, #outcome2 {
+		display:none;
+		margin-bottom:1em;
+	}
+</style>
+<body>
+	<textarea id="inputText" rows="4" cols="50" placeholder="Type here…"></textarea>
+    <br>
+    <button id="submit">Submit</button>
+	<button id="again">Clear/Reload</button>
+	<div id="outcome"></div>
+	<div id="outcome2">
+		
+	</div>
+</body>
+<script>
