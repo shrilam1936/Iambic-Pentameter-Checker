@@ -1,5 +1,3 @@
-//05/30/2024
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,7 +65,7 @@
 	<div id="outcome"></div>
 	<div id="outcome2">
 		<p>An iambic pentameter requires precisely 10 syllables and an emphasis pattern of '0 1 0 1 0 1 0 1 0 1', that is, every other syllable is emphasized. Due to the nature of monosyllabic words within a phrase (as well as limitations of the emphasis detection library), monosyllabic words are marked with <span style='font-size:1.1em'>X</span> and are treated as either 0 or 1.</p>
-		<p>In any case, keep in mind that this assessment <em>is not</em> exact science. Computer-based detections of emphasis patterns are problematic, and actual pronunciations might differ for artistic reasons.</p>
+		
 	</div>
 </body>
 <script>
@@ -235,4 +233,3 @@ function getEmphasisFromPattern(pattern) {
 
 </script>
 </html>
-
