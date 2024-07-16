@@ -1,5 +1,76 @@
 //05/30/2024
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="robots" content="noindex">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+		integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<style>
+    body {
+        background-color: black;
+        color: gainsboro;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    input[type="text"] {
+		padding: 10px;
+		font-size: 16px;
+		border-radius:0.5em;
+    }
+
+    button {
+        padding: 10px 20px;
+		border-radius:0.5em;
+		margin-top:1em;
+        font-size: 16px;
+        background-color: #555;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+	button:hover {animation: clickEffect 0.5s ease;animation-fill-mode: forwards;}
+    @keyframes clickEffect {
+        100% {
+            background-color: #333;
+        }
+    }
+	button:focus {animation: clickEffect2 0.5s ease;}
+	@keyframes clickEffect2 {
+	    0% {
+            background-color: #555;
+        }
+        50% {
+            background-color: green;
+        }
+        100% {
+            background-color: #555;
+        }
+	}
+	#again, #outcome2 {
+		display:none;
+		margin-bottom:1em;
+	}
+</style>
+<body>
+	<textarea id="inputText" rows="4" cols="50" placeholder="Type here…"></textarea>
+    <br>
+    <button id="submit">Submit</button>
+	<button id="again">Clear/Reload</button>
+	<div id="outcome"></div>
+	<div id="outcome2">
+		<p>An iambic pentameter requires precisely 10 syllables and an emphasis pattern of '0 1 0 1 0 1 0 1 0 1', that is, every other syllable is emphasized. Due to the nature of monosyllabic words within a phrase (as well as limitations of the emphasis detection library), monosyllabic words are marked with <span style='font-size:1.1em'>X</span> and are treated as either 0 or 1.</p>
+		<p>In any case, keep in mind that this assessment <em>is not</em> exact science. Computer-based detections of emphasis patterns are problematic, and actual pronunciations might differ for artistic reasons.</p>
+	</div>
+</body>
+<script>
 let linesArray = []; 
 document.getElementById("inputText").value = "";
 
@@ -11,10 +82,13 @@ $("#submit").click(function(){
 	linesArray = document.getElementById("inputText").value.split("\n");
 	$("#submit").blur();
 	if (linesArray.length==1 && linesArray[0]=="") {
-		alert("Error");
+		alert("You didn't type anything…");
 		return;
 	}
-
+	if (linesArray.length > 10) {
+		alert("Enter up to 10 lines…");
+		return;
+	}
 	
 	for (let i=0;i<linesArray.length;i++) {
 		let contentArray = linesArray[i].trim().replace(/[^\w\s]/g, '').toLowerCase().split(' ').filter(Boolean);
@@ -23,7 +97,7 @@ $("#submit").click(function(){
 		}
 		else {
 			processLine(contentArray, i, true);
-			//alert("More than 10 syllables");
+			//alert("You have entered a line with more than 10 syllables. By definition, it can't be an iambic pentameter…");
 		}	
 	}
 	
@@ -161,6 +235,4 @@ function getEmphasisFromPattern(pattern) {
 
 </script>
 </html>
-
-
 
